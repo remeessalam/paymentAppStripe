@@ -26,6 +26,37 @@ app.get('/store', function (req, res) {
     })
 })
 
+app.post('/purchase', function (req, res) {
+    console.log(req.body, 'req body ');
+    fs.readFile('items.json', function (err, data) {
+        if (err) {
+            res.status(500).end();
+        } else {
+            const jsonItems = JSON.parse(data);
+            const itemsArray = jsonItems.music.concat(jsonItems.merch)
+            let total = 0;
+            req.body.items.forEach(function (item) {
+                const jsonItems = itemsArray.find(function (i) {
+                    return i.id == item.id
+                })
+                total = total + jsonItems.price + item.quantity
+            })
+
+            stripe.charges.create({
+                amount: total,
+                source: req.body.stripeTokenId,
+                currency: 'usd'
+              }).then(function() {
+                console.log('Charge Successful')
+                res.json({ message: 'Successfully purchased items' })
+              }).catch(function() {
+                console.log('Charge Fail')
+                res.status(500).end()
+              })
+        }
+    })
+})
+
 
 
 const port = process.env.PORT || 3001
@@ -37,6 +68,3 @@ app.listen(port, () => {
 
 
 
-STRIPE_SECRET_KEY=sk_test_51MqqBISEozpIfwKXRIcH6x4NKbmkzIl4hY7DHOmS9pqM8ZAfqDb85yU0LAOAsbbnYZvHcksvso8iCTpmfINqAJB300ZLi8OVQI
-STRIPE_PUBLIC_KEY=pk_test_51MqqBISEozpIfwKXXagbBuYQLD0NWZETF3D2M4w13LJ5PPs4UVeDPO9BpUQghIaWWObVAcdEWhM8QbAeHZ5ovE7k00ciGmFkL8
-PORT=3000

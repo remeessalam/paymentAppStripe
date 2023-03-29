@@ -62,6 +62,7 @@ var stripeHandler = StripeCheckout.configure({
             while (cartItems.hasChildNodes()) {
                 cartItems.removeChild(cartItems.firstChild)
             }
+            removeCartItem()
             updateCartTotal()
         }).catch(function(error) {
             console.error(error)
